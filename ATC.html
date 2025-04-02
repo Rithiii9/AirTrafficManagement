@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Traffic Management System</title>
+    <style>
+        /* CSS Styles */
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #34a853;
+            --warning-color: #fbbc05;
+            --danger-color: #ea4335;
+            --dark-color: #202124;
+            --light-color: #f8f9fa;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            height: 40px;
+            margin-right: 10px;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 20px;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        nav ul li a:hover {
+            color: var(--warning-color);
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .sidebar {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+        }
+        
+        .sidebar-menu li {
+            margin-bottom: 15px;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            color: var(--dark-color);
+            text-decoration: none;
+            padding: 8px 10px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .sidebar-menu i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+        }
+        
+        .status-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .card-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .card-change {
+            font-size: 0.9rem;
+        }
+        
+        .positive {
+            color: var(--secondary-color);
+        }
+        
+        .negative {
+            color: var(--danger-color);
+        }
+        
+        .neutral {
+            color: var(--warning-color);
+        }
+        
+        .airspace-map {
+            height: 500px;
+            background-color: #e9e9e9;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .map-container {
+            width: 100%;
+            height: 100%;
+            background-image: url('https://maps.googleapis.com/maps/api/staticmap?center=40.7128,-74.0060&zoom=10&size=1200x600&maptype=terrain&key=YOUR_API_KEY');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .aircraft {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            border: 2px solid white;
+            transform: translate(-50%, -50%);
+        }
+        
+        .aircraft::after {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 10px;
+            background-color: var(--primary-color);
+        }
+        
+        .flight-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .flight-table th, .flight-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .flight-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .flight-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-scheduled {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .status-active {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+        
+        .status-delayed {
+            background-color: #fff8e1;
+            color: #ffa000;
+        }
+        
+        .status-cancelled {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+        
+        .optimization-panel {
+            margin-top: 20px;
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .panel-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0d5bba;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e2a703;
+        }
+        
+        .optimization-results {
+            margin-top: 20px;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .result-label {
+            font-weight: 500;
+            color: #666;
+        }
+        
+        .result-value {
+            font-weight: 600;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffeeba;
+        }
+        
+        @media (max-width: 1200px) {
+            .status-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            nav ul {
+                margin-top: 15px;
+                justify-content: center;
+            }
+            
+            nav ul li {
+                margin: 0 10px;
+            }
+        }
+    </style>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <img src="https://via.placeholder.com/40" alt="ATMS Logo">
+                <h1>Air Traffic Management System</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="Dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="Flights.html"><i class="fas fa-plane"></i> Flights</a></li>
+                    <li><a href="Routes.html"><i class="fas fa-route"></i> Routes</a></li>
+                    <li><a href="Settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="dashboard">
+            <aside class="sidebar">
+                <ul class="sidebar-menu">
+                    <li><a href="#" class="active"><i class="fas fa-tachometer-alt"></i> Overview</a></li>
+                    <li><a href="#"><i class="fas fa-map-marked-alt"></i> Airspace Map</a></li>
+                    <li><a href="#"><i class="fas fa-plane-departure"></i> Departures</a></li>
+                    <li><a href="#"><i class="fas fa-plane-arrival"></i> Arrivals</a></li>
+                    <li><a href="#"><i class="fas fa-exchange-alt"></i> Transfers</a></li>
+                    <li><a href="#"><i class="fas fa-chart-line"></i> Analytics</a></li>
+                    <li><a href="#"><i class="fas fa-robot"></i> Optimization</a></li>
+                    <li><a href="#"><i class="fas fa-bell"></i> Alerts</a></li>
+                    <li><a href="#"><i class="fas fa-history"></i> History</a></li>
+                    <li><a href="#"><i class="fas fa-question-circle"></i> Help</a></li>
+                </ul>
+            </aside>
+            
+            <main class="main-content">
+                <div class="status-cards">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Active Flights</span>
+                            <i class="fas fa-plane"></i>
+                        </div>
+                        <div class="card-value">142</div>
+                        <div class="card-change positive"><i class="fas fa-arrow-up"></i> 12% from yesterday</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Delayed Flights</span>
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="card-value">18</div>
+                        <div class="card-change negative"><i class="fas fa-arrow-down"></i> 5% from yesterday</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Airspace Capacity</span>
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div class="card-value">72%</div>
+                        <div class="card-change neutral">Stable</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Fuel Savings</span>
+                            <i class="fas fa-gas-pump"></i>
+                        </div>
+                        <div class="card-value">$24,580</div>
+                        <div class="card-change positive"><i class="fas fa-arrow-up"></i> 8% from yesterday</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Airspace Monitoring</h2>
+                        <div>
+                            <button class="btn btn-primary"><i class="fas fa-sync-alt"></i> Refresh</button>
+                        </div>
+                    </div>
+                    <div class="airspace-map">
+                        <div class="map-container" id="airspaceMap">
+                            <!-- Aircraft positions would be dynamically added here -->
+                            <div class="aircraft" style="top: 30%; left: 40%;" data-flight="AA123"></div>
+                            <div class="aircraft" style="top: 45%; left: 55%;" data-flight="DL456"></div>
+                            <div class="aircraft" style="top: 60%; left: 35%;" data-flight="UA789"></div>
+                            <div class="aircraft" style="top: 25%; left: 65%;" data-flight="BA321"></div>
+                            <div class="aircraft" style="top: 50%; left: 25%;" data-flight="AF654"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Flight Schedule</h2>
+                        <div>
+                            <button class="btn btn-primary"><i class="fas fa-plus"></i> Add Flight</button>
+                            <button class="btn btn-warning"><i class="fas fa-filter"></i> Filter</button>
+                        </div>
+                    </div>
+                    <table class="flight-table">
+                        <thead>
+                            <tr>
+                                <th>Flight ID</th>
+                                <th>Airline</th>
+                                <th>Origin</th>
+                                <th>Destination</th>
+                                <th>Departure</th>
+                                <th>Arrival</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>AA123</td>
+                                <td>American Airlines</td>
+                                <td>JFK</td>
+                                <td>LAX</td>
+                                <td>08:00</td>
+                                <td>11:15</td>
+                                <td><span class="status-badge status-active">In Progress</span></td>
+                                <td><button class="btn btn-primary" style="padding: 4px 8px; font-size: 0.8rem;">Track</button></td>
+                            </tr>
+                            <tr>
+                                <td>DL456</td>
+                                <td>Delta Airlines</td>
+                                <td>ATL</td>
+                                <td>ORD</td>
+                                <td>09:30</td>
+                                <td>11:00</td>
+                                <td><span class="status-badge status-scheduled">Scheduled</span></td>
+                                <td><button class="btn btn-primary" style="padding: 4px 8px; font-size: 0.8rem;">Track</button></td>
+                            </tr>
+                            <tr>
+                                <td>UA789</td>
+                                <td>United Airlines</td>
+                                <td>SFO</td>
+                                <td>DEN</td>
+                                <td>10:15</td>
+                                <td>13:45</td>
+                                <td><span class="status-badge status-delayed">Delayed</span></td>
+                                <td><button class="btn btn-primary" style="padding: 4px 8px; font-size: 0.8rem;">Track</button></td>
+                            </tr>
+                            <tr>
+                                <td>BA321</td>
+                                <td>British Airways</td>
+                                <td>LHR</td>
+                                <td>JFK</td>
+                                <td>14:00</td>
+                                <td>17:30</td>
+                                <td><span class="status-badge status-scheduled">Scheduled</span></td>
+                                <td><button class="btn btn-primary" style="padding: 4px 8px; font-size: 0.8rem;">Track</button></td>
+                            </tr>
+                            <tr>
+                                <td>AF654</td>
+                                <td>Air France</td>
+                                <td>CDG</td>
+                                <td>ATL</td>
+                                <td>16:45</td>
+                                <td>20:15</td>
+                                <td><span class="status-badge status-cancelled">Cancelled</span></td>
+                                <td><button class="btn btn-primary" style="padding: 4px 8px; font-size: 0.8rem;">Track</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="card optimization-panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">Route Optimization</h3>
+                        <button class="btn btn-primary"><i class="fas fa-bolt"></i> Run Optimization</button>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Weather conditions may affect optimal routes in the Northeast sector.
+                    </div>
+                    
+                    <div class="optimization-results">
+                        <div class="result-item">
+                            <span class="result-label">Potential Fuel Savings:</span>
+                            <span class="result-value">$8,450</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Estimated Delay Reduction:</span>
+                            <span class="result-value">23%</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Optimal Altitude Changes:</span>
+                            <span class="result-value">42 flights</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Route Efficiency Improvement:</span>
+                            <span class="result-value">15%</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script>
+        // This would be replaced with actual JavaScript for a real implementation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simulate aircraft movement
+            const aircrafts = document.querySelectorAll('.aircraft');
+            
+            setInterval(() => {
+                aircrafts.forEach(aircraft => {
+                    const currentTop = parseInt(aircraft.style.top);
+                    const currentLeft = parseInt(aircraft.style.left);
+                    
+                    // Random slight movement
+                    const newTop = currentTop + (Math.random() * 2 - 1);
+                    const newLeft = currentLeft + (Math.random() * 2 - 1);
+                    
+                    // Keep within bounds
+                    aircraft.style.top = Math.max(5, Math.min(95, newTop)) + '%';
+                    aircraft.style.left = Math.max(5, Math.min(95, newLeft)) + '%';
+                });
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
